@@ -1,0 +1,78 @@
+
+-- Products overview
+–- Avg proof, bottle price, and case cost for whisky
+SELECT category_name, AVG(proof::numeric) AS avg_proof, 
+    AVG(bottle_price::numeric) AS avg_bottle_price, AVG(case_cost) AS avg_case_cost
+FROM products
+WHERE category_name ILIKE '%WHISK%'
+GROUP BY category_name
+
+–-Top 5 Vendor per whisky sales
+SELECT vendor, category_name, SUM(total)AS total_sales
+FROM sales
+WHERE category_name ILIKE '%WHISK%'
+GROUP BY vendor, category_name
+ORDER BY vendor desc
+
+
+
+
+-- Stores
+-- Avg total sales & avg bottle price per whisky in large county
+SELECT counties.county,  counties.population, sales.category_name, 
+    avg(btl_price::numeric) AS avg_blt_price,SUM(total) AS total_sales
+FROM sales JOIN counties
+    ON sales.county = counties.county
+WHERE counties.population BETWEEN 80000 AND 450000
+    AND sales.category_name ILIKE '%WHISK%'
+GROUP BY sales.category_name, counties.county
+ORDER BY SUM(total) desc
+
+-- Avg total sales & avg bottle price per whisky in medium county
+SELECT counties.county,  counties.population, sales.category_name, 
+    avg(btl_price::numeric) AS avg_blt_price, SUM(total) AS total_sales
+FROM sales JOIN counties
+    ON sales.county = counties.county
+WHERE counties.population BETWEEN 40000 AND 79999
+     AND sales.category_name ILIKE '%WHISK%'
+GROUP BY sales.category_name, counties.county
+ORDER BY SUM(total) desc
+
+-- Avg total sales & avg bottle price per whisky in small county
+SELECT counties.county,  counties.population, sales.category_name, 
+    avg(btl_price::numeric) AS avg_blt_price, SUM(total) AS total_sales
+FROM sales JOIN counties
+    ON sales.county = counties.county
+WHERE counties.population BETWEEN 0 AND 39999
+     AND sales.category_name ILIKE '%WHISK%'
+GROUP BY sales.category_name, counties.county
+ORDER BY SUM(total) desc
+
+
+    
+
+
+-- SALES
+–- Canadian Whisky sales throughout Iowa
+SELECT county, AVG(CASE WHEN category_name ILIKE '%canadian whisk%' THEN 1 
+    ELSE 0 END) AS pct_cw
+FROM sales
+GROUP BY county
+ORDER BY pct_cw DESC
+
+-- Top 5 counties have the highest sales of canadian whisky?
+SELECT county, AVG(CASE WHEN category_name ILIKE '%canadian whisk%' THEN 1 
+    ELSE 0 END) AS pct_cw
+FROM sales
+GROUP BY county
+ORDER BY pct_cw DESC
+LIMIT 5
+
+–- Top 5 counties have the lowest sales of canadian whisky
+SELECT county, AVG(CASE WHEN category_name ILIKE '%canadian whisk%' THEN 1 
+    ELSE 0 END) AS pct_cw
+FROM sales
+WHERE county IS NOT NULL 
+GROUP BY county
+ORDER BY pct_cw ASC
+LIMIT 5
